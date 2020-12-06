@@ -15,6 +15,7 @@ from random import shuffle
 from nltk.corpus import stopwords
 import itertools
 from sklearn.metrics import mean_squared_error
+import statistics
 
 # read data
 data = []
@@ -288,11 +289,11 @@ biwordSet_rmPunc_Stop = set(biwords_rmPunc_Stop)
 def featureSummary(datum, rmPunc, rmPuncStop):
 	feat = [0]*len(uniwords)
 	if rmPunc:
-		r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation])
+		r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation])
 	elif rmPuncStop:
-		r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation and c not in stopwords])
+		r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation and c not in stopwords])
 	else:
-		r = ''.join([c for c in datum['review_text'].lower()])
+		r = ''.join([c for c in datum['review_summary'].lower()])
 	for token in r.split():
 		if rmPunc:
 			if token in uniwords_rmPunc:
@@ -329,10 +330,7 @@ def featureText(datum, rmPunc, rmPuncStop):
 	return feat
 
 
-X = [featureCategory(d) for d in data[:9000]]
-y = [int(d["rating"]) for d in data[:9000]]
-X_test = [featureCategory(d) for d in data[9000:10000]]
-y_test = [int(d["rating"]) for d in data[9000:10000]]
+
 clf = linear_model.Ridge(1.0, fit_intercept=False) # MSE + 1.0 l2
 clf.fit(X, y)
 predictions = clf.predict(X_test)
