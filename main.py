@@ -31,6 +31,101 @@ def readJSON(path):
 for d in readJSON("renttherunway_final_data.json.gz"):
 	data.append(d)
 
+# process the data to parse the height and the weight
+import re
+
+def parse_height(height):
+    pattern = re.compile(r'(\d+)\' (\d+)\"')
+    match = pattern.match(height)
+
+    if match:
+        feet = int(match.group(1))
+        inch = int(match.group(2))
+
+        return feet*12 + inch
+    else:
+        return -1
+
+def parse_weight(weight):
+    pattern = re.compile(r'(\d+)lbs')
+    match = pattern.match(weight)
+    if match:
+        return int(match.group(1))
+    else:
+        return -1
+
+
+def parse_data(data):
+    for d in data:
+        height = parse_height(d['height'])
+        d['height'] = height
+
+        weight = parse_weight(d['weight'])
+        d['weight'] = weight
+
+parse_data(data)
+
+# extract the min and max for regulization
+def extract_max(data):
+    maxAge = -1
+    maxSize = -1
+    maxWeight = -1
+    maxHeight = -1
+
+    for d in data:
+        if int(d["age"]) > maxAge:
+            maxAge = int(d["age"])
+        if d["size"] > maxSize:
+            maxSize = d["size"]
+        if d["weight"] > maxWeight:
+            maxWeight = d["weight"]
+        if d["height"] > maxHeight:
+            maxHeight = d["height"]
+    
+    return maxAge, maxSize, maxWeight, maxHeight
+
+maxAge, maxSize, maxWeight, maxHeight = extract_max(data)
+
+def extract_min(data):
+    minAge = maxAge
+    minSize = maxSize
+    minWeight = maxWeight
+    minHeight = maxHeight
+
+    for d in data:
+        if int(d["age"]) < minAge:
+            minAge = int(d["age"])
+        if d["size"] < minSize:
+            minSize = d["size"]
+        if d["weight"] < minWeight:
+            minWeight = d["weight"]
+        if d["height"] < minHeight:
+            minHeight = d["height"]
+    
+    return minAge, minSize, minWeight, minHeight
+
+minAge, minSize, minWeight, minHeight = extract_min(data)
+
+# extract the regulized features
+def regulize(d, minD, maxD):
+    return (d - minD)/(maxD - minD)
+
+def age(datum, minAge, maxAge):
+    return regulize(int(datum["age"]), minAge, maxAge)
+
+def size(datum, minSize, maxSize):
+    return regulize(datum["size"], minSize, maxSize)
+
+def weight(datum, minWeight, maxWeight):
+    return regulize(datum["weight"], minWeight, maxWeight)
+
+def height(datum, minHeight, maxHeight):
+    return regulize(datum["height"], minHeight, maxHeight)
+
+
+
+
+
 Entry = ["fit", "rented for", "body type", "category", "bust size"]
 
 def extract_onehot(data, Entry):
