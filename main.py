@@ -13,6 +13,7 @@ from sklearn import linear_model
 from scipy import spatial
 from random import shuffle
 from nltk.corpus import stopwords
+import itertools
 
 # read data
 data = []
@@ -55,12 +56,20 @@ def feature_onehot(datum, Maps, Entry):
 	for i in range(len(Maps)):
 		vec[i][Maps[i][d[Entry[i]]]] = 1
 	
-	# add 1 as intercept
-	for v in vec:
-		v.append(1)
+	# # add 1 as intercept for each feature vector
+	# for v in vec:
+	# 	v.append(1)
+
+	# else if you want all features combined as one
+	vec = list(itertools.chain.from_iterable(vec))
+	vec.append(1)
+
 	return vec
 
-vec = feature_onehot(data[22], Maps, Entry)
+# vec = feature_onehot(data[22], Maps, Entry)
 # print(vec)
 
+
+X = [feature_onehot(d, Maps, Entry) for d in data]
+y = [d["rating"] for d in data]
 
