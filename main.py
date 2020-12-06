@@ -30,3 +30,37 @@ def readJSON(path):
 for d in readJSON("renttherunway_final_data.json.gz"):
 	data.append(d)
 
+Entry = ["fit", "rented for", "body type", "category", "bust size"]
+
+def extract_onehot(data, Entry):
+	Maps = [defaultdict(int) for i in range(len(Entry))]
+	for d in data:
+		for i in range(5):
+			k, mp = Entry[i], Maps[i]
+			if d[k] not in mp:
+				mp[d[k]] = len(mp)
+	return Maps
+
+# fit: 3
+# rented for: 9
+# body type: 7
+# category: 68
+# bust size: 101
+
+Maps = extract_onehot(data, Entry)
+# print(len(Maps[4]))
+		
+def feature_onehot(datum, Maps, Entry):
+	vec = [[0]*len(i) for i in Maps]
+	for i in range(len(Maps)):
+		vec[i][Maps[i][d[Entry[i]]]] = 1
+	
+	# add 1 as intercept
+	for v in vec:
+		v.append(1)
+	return vec
+
+vec = feature_onehot(data[22], Maps, Entry)
+# print(vec)
+
+
