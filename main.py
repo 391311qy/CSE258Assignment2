@@ -162,7 +162,7 @@ def feature_onehot_separated(datum):
 		v.append(1)
 	return featureVectors
 
-print(feature_onehot_separated(data[22]))
+# print(feature_onehot_separated(data[22]))
 
 # fit feature
 def featureFit(datum):
@@ -195,7 +195,8 @@ def featureBustSize(datum):
 	feat.append(1)
 	return feat
 
-
+#import nltk
+#nltk.download('stopwords')
 
 # unigram and bigram
 uniWordCount = defaultdict(int)
