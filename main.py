@@ -125,53 +125,75 @@ def height(datum, minHeight, maxHeight):
 
 
 
-
+# One hot encoding features
 Entry = ["fit", "rented for", "body type", "category", "bust size"]
 
 def extract_onehot(data, Entry):
-	Maps = [defaultdict(int) for i in range(len(Entry))]
+	Maps = {Entry[i]:defaultdict(int) for i in range(len(Entry))}
 	for d in data:
-		for i in range(5):
-			k, mp = Entry[i], Maps[i]
-			if d[k] not in mp:
-				mp[d[k]] = len(mp)
+		for f in Entry:
+			mp = Maps[f]
+			if d[f] not in mp:
+				mp[d[f]] = len(mp)
 	return Maps
 
-# fit: 3
-# rented for: 9
-# body type: 7
-# category: 68
-# bust size: 101
+# fit: 3; rented for: 9; body type: 7; category: 68; bust size: 101
 
 Maps = extract_onehot(data, Entry)
-# print(len(Maps[4]))
-		
-def feature_onehot(datum, Maps, Entry):
-	vec = [[0]*len(i) for i in Maps]
-	for i in range(len(Maps)):
-		vec[i][Maps[i][d[Entry[i]]]] = 1
-	
-	# # add 1 as intercept for each feature vector
-	# for v in vec:
-	# 	v.append(1)
 
-	# else if you want all features combined as one
-	vec = list(itertools.chain.from_iterable(vec))
-	vec.append(1)
-
-	return vec
-
-# vec = feature_onehot(data[22], Maps, Entry)
-# print(vec)
+# Combined single vector
+def feature_onehot_combined(datum):
+	featureVectors = [[0]*len(Maps[f]) for f in Entry]
+	for i in range(len(Entry)):
+		f = Entry[i]
+		featureVectors[i][Maps[f][d[f]]] = 1
+	singleVector = list(itertools.chain.from_iterable(featureVectors))
+	singleVector.append(1)
+	return singleVector
 
 
-X = [feature_onehot(d, Maps, Entry) for d in data]
-y = [d["rating"] for d in data]
+# separate features (all 5)
+def feature_onehot_separated(datum):
+	featureVectors = [[0]*len(Maps[f]) for f in Entry]
+	for i in range(len(Entry)):
+		f = Entry[i]
+		featureVectors[i][Maps[f][d[f]]] = 1
+	for v in featureVectors:
+		v.append(1)
+	return featureVectors
 
+print(feature_onehot_separated(data[22]))
 
+# fit feature
+def featureFit(datum):
+	feat = [0] * len(Maps['fit'])
+	feat[Maps['fit'][d['fit']]] = 1
+	feat.append(1)
+	return feat
 
+def featureRentedFor(datum):
+	feat = [0] * len(Maps['rented for'])
+	feat[Maps['rented for'][d['rented for']]] = 1
+	feat.append(1)
+	return feat
 
+def featureBodyType(datum):
+	feat = [0] * len(Maps['body type'])
+	feat[Maps['body type'][d['body type']]] = 1
+	feat.append(1)
+	return feat
 
+def featureCategory(datum):
+	feat = [0] * len(Maps['category'])
+	feat[Maps['category'][d['category']]] = 1
+	feat.append(1)
+	return feat
+
+def featureBustSize(datum):
+	feat = [0] * len(Maps['bust size'])
+	feat[Maps['bust size'][d['bust size']]] = 1
+	feat.append(1)
+	return feat
 
 
 
