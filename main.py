@@ -14,6 +14,7 @@ from scipy import spatial
 from random import shuffle
 from nltk.corpus import stopwords
 import itertools
+from sklearn.metrics import mean_squared_error
 
 # read data
 data = []
@@ -30,6 +31,8 @@ def readJSON(path):
 
 for d in readJSON("renttherunway_final_data.json.gz"):
 	data.append(d)
+
+data = data[:10000]
 
 # process the data to parse the height and the weight
 import re
@@ -326,3 +329,11 @@ def featureText(datum, rmPunc, rmPuncStop):
 	return feat
 
 
+X = [featureCategory(d) for d in data[:9000]]
+y = [int(d["rating"]) for d in data[:9000]]
+X_test = [featureCategory(d) for d in data[9000:10000]]
+y_test = [int(d["rating"]) for d in data[9000:10000]]
+clf = linear_model.Ridge(1.0, fit_intercept=False) # MSE + 1.0 l2
+clf.fit(X, y)
+predictions = clf.predict(X_test)
+print("mse of prediction is "+ str(mean_squared_error(y_test ,predictions)))
