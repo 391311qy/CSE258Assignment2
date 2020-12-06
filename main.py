@@ -237,45 +237,48 @@ for d in data:
 	for token in bigrm:
 		biWordCount_rmPunc_Stop[token] += 1
 
+top_k_uni = 40
+top_k_bi = 40
+
 unicounts = [(uniWordCount[w], w) for w in uniWordCount]
 unicounts.sort()
 unicounts.reverse()
-uniwords = [x[1] for x in unicounts[:1000]]
+uniwords = [x[1] for x in unicounts[:top_k_uni]]
 uniwordId = dict(zip(uniwords, range(len(uniwords))))
 uniwordSet = set(uniwords)
 
 unicounts_rmPunc = [(uniWordCount_rmPunc[w], w) for w in uniWordCount_rmPunc]
 unicounts_rmPunc.sort()
 unicounts_rmPunc.reverse()
-uniwords_rmPunc = [x[1] for x in unicounts_rmPunc[:1000]]
+uniwords_rmPunc = [x[1] for x in unicounts_rmPunc[:top_k_uni]]
 uniwordId_rmPunc = dict(zip(uniwords_rmPunc, range(len(uniwords_rmPunc))))
 uniwordSet_rmPunc = set(uniwords_rmPunc)
+
+uniWordCount_rmPunc_Stop = [(uniWordCount_rmPunc_Stop[w], w) for w in uniWordCount]
+uniWordCount_rmPunc_Stop.sort()
+uniWordCount_rmPunc_Stop.reverse()
+uniwords_rmPunc_Stop = [x[1] for x in uniWordCount_rmPunc_Stop[:top_k_uni]]
+uniwordId_rmPunc_Stop = dict(zip(uniwords_rmPunc_Stop, range(len(uniwords_rmPunc_Stop))))
+uniwordSet_rmPunc_Stop = set(uniwords_rmPunc_Stop)
 
 bicounts = [(biWordCount[w], w) for w in biWordCount]
 bicounts.sort()
 bicounts.reverse()
-biwords = [x[1] for x in bicounts[:1000]]
+biwords = [x[1] for x in bicounts[:top_k_bi]]
 biwordId = dict(zip(biwords, range(len(biwords))))
 biwordSet = set(biwords)
 
 bicounts_rmPunc = [(biWordCount_rmPunc[w], w) for w in biWordCount_rmPunc]
 bicounts_rmPunc.sort()
 bicounts_rmPunc.reverse()
-biwords_rmPunc = [x[1] for x in bicounts_rmPunc[:1000]]
+biwords_rmPunc = [x[1] for x in bicounts_rmPunc[:top_k_bi]]
 biwordId_rmPunc = dict(zip(biwords_rmPunc, range(len(biwords_rmPunc))))
 biwordSet_rmPunc = set(biwords_rmPunc)
-
-uniWordCount_rmPunc_Stop = [(uniWordCount_rmPunc_Stop[w], w) for w in uniWordCount]
-uniWordCount_rmPunc_Stop.sort()
-uniWordCount_rmPunc_Stop.reverse()
-uniwords_rmPunc_Stop = [x[1] for x in uniWordCount_rmPunc_Stop[:1000]]
-uniwordId_rmPunc_Stop = dict(zip(uniwords_rmPunc_Stop, range(len(uniwords_rmPunc_Stop))))
-uniwordSet_rmPunc_Stop = set(uniwords_rmPunc_Stop)
 
 bicounts_rmPunc_Stop = [(biWordCount_rmPunc_Stop[w], w) for w in biWordCount_rmPunc_Stop]
 bicounts_rmPunc_Stop.sort()
 bicounts_rmPunc_Stop.reverse()
-biwords_rmPunc_Stop = [x[1] for x in bicounts_rmPunc_Stop[:1000]]
+biwords_rmPunc_Stop = [x[1] for x in bicounts_rmPunc_Stop[:top_k_bi]]
 biwordId_rmPunc_Stop = dict(zip(biwords_rmPunc_Stop, range(len(biwords_rmPunc_Stop))))
 biwordSet_rmPunc_Stop = set(biwords_rmPunc_Stop)
 
