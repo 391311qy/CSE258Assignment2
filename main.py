@@ -16,6 +16,7 @@ from nltk.corpus import stopwords
 import itertools
 from sklearn.metrics import mean_squared_error
 import statistics
+from sklearn.metrics import mean_absolute_error
 
 # read data
 data = []
@@ -196,7 +197,7 @@ def featureCategory(datum):
 def featureBustSize(datum):
 	feat = [0] * len(Maps['bust size'])
 	feat[Maps['bust size'][d['bust size']]] = 1
-	feat.append(1)
+	# feat.append(1)
 	return feat
 
 #import nltk
@@ -217,6 +218,14 @@ stopwords = set(stopwords.words('english'))
 punctuation.add('\n')
 stemmer = PorterStemmer()
 
+
+
+# set test range
+top_k_uni_list = [900, 950, 975, 1000, 1050, 1100]
+top_k_bi_list = [500, 600, 650, 700, 800, 900]
+
+
+
 for d in data:
 	text = ''.join([c for c in d['review_summary'].lower()])
 	for token in text.split():
@@ -224,114 +233,159 @@ for d in data:
 	text = ''.join([c for c in d['review_summary'].lower() if c not in punctuation ])
 	for token in text.split():
 		uniWordCount_rmPunc[token] += 1
-	text = ''.join([c for c in d['review_summary'].lower() if c not in punctuation and c not in stopwords])
+	text = ''.join([c for c in d['review_summary'].lower() if c not in punctuation])
 	for token in text.split():
-		uniWordCount_rmPunc_Stop[token] += 1
+		if token not in stopwords:
+			uniWordCount_rmPunc_Stop[token] += 1
 
-	text = ''.join([c for c in d['review_text'].lower() if c not in punctuation ])
-	bigrm = nltk.bigrams(nltk.word_tokenize(text))
-	for token in bigrm:
-		biWordCount_rmPunc[token] += 1
-	text = ''.join([c for c in d['review_text'].lower()])
-	bigrm = nltk.bigrams(nltk.word_tokenize(text))
-	for token in bigrm:
-		biWordCount[token] += 1
-	text = ''.join([c for c in d['review_text'].lower() if c not in punctuation and c not in stopwords])
-	bigrm = nltk.bigrams(nltk.word_tokenize(text))
-	for token in bigrm:
-		biWordCount_rmPunc_Stop[token] += 1
-
-top_k_uni = 40
-top_k_bi = 40
+	# uncomment if want to test bigram 	
+	# text = ''.join([c for c in d['review_text'].lower() if c not in punctuation ])
+	# bigrm = nltk.bigrams(nltk.word_tokenize(text))
+	# for token in bigrm:
+	# 	biWordCount_rmPunc[token] += 1
+	# text = ''.join([c for c in d['review_text'].lower()])
+	# bigrm = nltk.bigrams(nltk.word_tokenize(text))
+	# for token in bigrm:
+	# 	biWordCount[token] += 1
+	# text = ''.join([c for c in d['review_text'].lower() if c not in punctuation])
+	# rmStopList = []
+	# for w in text.split():
+	# 	if w not in stopwords:
+	# 		rmStopList.append(w)
+	# text = (" ").join(rmStopList)
+	# bigrm = nltk.bigrams(nltk.word_tokenize(text))
+	# for token in bigrm:
+	# 	biWordCount_rmPunc_Stop[token] += 1
 
 unicounts = [(uniWordCount[w], w) for w in uniWordCount]
 unicounts.sort()
 unicounts.reverse()
-uniwords = [x[1] for x in unicounts[:top_k_uni]]
-uniwordId = dict(zip(uniwords, range(len(uniwords))))
-uniwordSet = set(uniwords)
+
 
 unicounts_rmPunc = [(uniWordCount_rmPunc[w], w) for w in uniWordCount_rmPunc]
 unicounts_rmPunc.sort()
 unicounts_rmPunc.reverse()
-uniwords_rmPunc = [x[1] for x in unicounts_rmPunc[:top_k_uni]]
-uniwordId_rmPunc = dict(zip(uniwords_rmPunc, range(len(uniwords_rmPunc))))
-uniwordSet_rmPunc = set(uniwords_rmPunc)
+
 
 uniWordCount_rmPunc_Stop = [(uniWordCount_rmPunc_Stop[w], w) for w in uniWordCount]
 uniWordCount_rmPunc_Stop.sort()
 uniWordCount_rmPunc_Stop.reverse()
-uniwords_rmPunc_Stop = [x[1] for x in uniWordCount_rmPunc_Stop[:top_k_uni]]
-uniwordId_rmPunc_Stop = dict(zip(uniwords_rmPunc_Stop, range(len(uniwords_rmPunc_Stop))))
-uniwordSet_rmPunc_Stop = set(uniwords_rmPunc_Stop)
 
-bicounts = [(biWordCount[w], w) for w in biWordCount]
-bicounts.sort()
-bicounts.reverse()
-biwords = [x[1] for x in bicounts[:top_k_bi]]
-biwordId = dict(zip(biwords, range(len(biwords))))
-biwordSet = set(biwords)
+# uncomment if want to test bigram 	
 
-bicounts_rmPunc = [(biWordCount_rmPunc[w], w) for w in biWordCount_rmPunc]
-bicounts_rmPunc.sort()
-bicounts_rmPunc.reverse()
-biwords_rmPunc = [x[1] for x in bicounts_rmPunc[:top_k_bi]]
-biwordId_rmPunc = dict(zip(biwords_rmPunc, range(len(biwords_rmPunc))))
-biwordSet_rmPunc = set(biwords_rmPunc)
 
-bicounts_rmPunc_Stop = [(biWordCount_rmPunc_Stop[w], w) for w in biWordCount_rmPunc_Stop]
-bicounts_rmPunc_Stop.sort()
-bicounts_rmPunc_Stop.reverse()
-biwords_rmPunc_Stop = [x[1] for x in bicounts_rmPunc_Stop[:top_k_bi]]
-biwordId_rmPunc_Stop = dict(zip(biwords_rmPunc_Stop, range(len(biwords_rmPunc_Stop))))
-biwordSet_rmPunc_Stop = set(biwords_rmPunc_Stop)
+# bicounts = [(biWordCount[w], w) for w in biWordCount]
+# bicounts.sort()
+# bicounts.reverse()
 
-def featureSummary(datum, rmPunc, rmPuncStop):
-	feat = [0]*len(uniwords)
-	if rmPunc:
-		r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation])
-	elif rmPuncStop:
-		r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation and c not in stopwords])
-	else:
-		r = ''.join([c for c in datum['review_summary'].lower()])
-	for token in r.split():
-		if rmPunc:
-			if token in uniwords_rmPunc:
-				feat[uniwordId_rmPunc[token]] += 1
-		elif rmPuncStop:
-			if token in uniwords_rmPunc_Stop:
-				feat[uniwordId_rmPunc_Stop[token]] += 1
+
+# bicounts_rmPunc = [(biWordCount_rmPunc[w], w) for w in biWordCount_rmPunc]
+# bicounts_rmPunc.sort()
+# bicounts_rmPunc.reverse()
+
+# bicounts_rmPunc_Stop = [(biWordCount_rmPunc_Stop[w], w) for w in biWordCount_rmPunc_Stop]
+# bicounts_rmPunc_Stop.sort()
+# bicounts_rmPunc_Stop.reverse()
+
+
+
+# for top_k_bi in top_k_bi_list:
+# 	biwords = [x[1] for x in bicounts[:top_k_bi]]
+# 	biwordId = dict(zip(biwords, range(len(biwords))))
+# 	biwordSet = set(biwords)
+
+# 	biwords_rmPunc = [x[1] for x in bicounts_rmPunc[:top_k_bi]]
+# 	biwordId_rmPunc = dict(zip(biwords_rmPunc, range(len(biwords_rmPunc))))
+# 	biwordSet_rmPunc = set(biwords_rmPunc)
+
+# 	biwords_rmPunc_Stop = [x[1] for x in bicounts_rmPunc_Stop[:top_k_bi]]
+# 	biwordId_rmPunc_Stop = dict(zip(biwords_rmPunc_Stop, range(len(biwords_rmPunc_Stop))))
+# 	biwordSet_rmPunc_Stop = set(biwords_rmPunc_Stop)
+
+# 	def featureText(datum, rmStatus):
+# 		feat = [0]*top_k_bi
+# 		if rmStatus == 0:
+# 			r = ''.join([c for c in datum['review_text'].lower()])
+# 		elif rmStatus == 1:
+# 			r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation])
+# 		else:
+# 			r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation])
+# 			rmStopList = []
+# 			for w in r.split():
+# 				if w not in stopwords:
+# 					rmStopList.append(w)
+# 			r = (" ").join(rmStopList)
+# 		bigrm = nltk.bigrams(nltk.word_tokenize(r))
+# 		for token in bigrm:
+# 			for token in bigrm:
+# 				if rmStatus == 0:
+# 					if token in biwords:
+# 						feat[biwordId[token]] += 1
+# 				elif rmStatus == 1:
+# 					if token in biwords_rmPunc:
+# 						feat[biwordId_rmPunc[token]] += 1
+# 				else:
+# 					if token in biwords_rmPunc_Stop:
+# 						feat[biwordId_rmPunc_Stop[token]] += 1
+# 		feat.append(1)
+# 		return feat
+
+# 	X = [featureText(d, 2)for d in data[:9000]]
+# 	y = [int(d["rating"]) for d in data[:9000]]
+# 	X_test = [featureText(d, 2) for d in data[9000:10000]]
+# 	y_test = [int(d["rating"]) for d in data[9000:10000]]
+# 	clf = linear_model.Ridge(1.0, fit_intercept=False) # MSE + 1.0 l2
+# 	clf.fit(X, y)
+# 	predictions = clf.predict(X_test)
+# 	print("top {0}".format(str(top_k_bi)))
+# 	print("mse of prediction is "+ str(mean_squared_error(y_test ,predictions)))
+# 	print("mae of prediction is "+ str(mean_absolute_error(y_test ,predictions)))
+# 	print()
+
+
+for top_k_uni in top_k_uni_list:
+
+	uniwords = [x[1] for x in unicounts[:top_k_uni]]
+	uniwordId = dict(zip(uniwords, range(len(uniwords))))
+	uniwordSet = set(uniwords)
+	uniwords_rmPunc = [x[1] for x in unicounts_rmPunc[:top_k_uni]]
+	uniwordId_rmPunc = dict(zip(uniwords_rmPunc, range(len(uniwords_rmPunc))))
+	uniwordSet_rmPunc = set(uniwords_rmPunc)
+	uniwords_rmPunc_Stop = [x[1] for x in uniWordCount_rmPunc_Stop[:top_k_uni]]
+	uniwordId_rmPunc_Stop = dict(zip(uniwords_rmPunc_Stop, range(len(uniwords_rmPunc_Stop))))
+	uniwordSet_rmPunc_Stop = set(uniwords_rmPunc_Stop)
+
+	def featureSummary(datum, rmStatus):
+		feat = [0]*len(uniwords)
+
+		if rmStatus == 0:
+			r = ''.join([c for c in datum['review_summary'].lower()])
+		elif rmStatus == 1:
+			r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation])
 		else:
-			if token in uniwords:
-				feat[uniwordId[token]] += 1
-	feat.append(1)
-	return feat
+			r = ''.join([c for c in datum['review_summary'].lower() if c not in punctuation])
+			
+		for token in r.split():
+			if rmStatus == 0:
+				if token in uniwords:
+					feat[uniwordId[token]] += 1
+			elif rmStatus == 1:
+				if token in uniwords_rmPunc:
+					feat[uniwordId_rmPunc[token]] += 1
+			else:
+				if token in uniwords_rmPunc_Stop:
+					feat[uniwordId_rmPunc_Stop[token]] += 1
 
-def featureText(datum, rmPunc, rmPuncStop):
-	feat = [0]*len(uniwords)
-	if rmPunc:
-		r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation])
-	elif rmPuncStop:
-		r = ''.join([c for c in datum['review_text'].lower() if c not in punctuation and c not in stopwords])
-	else:
-		r = ''.join([c for c in datum['review_text'].lower()])
+		feat.append(1)
+		return feat
 
-	for token in r.split():
-		if rmPunc:
-			if token in biwords_rmPunc:
-				feat[biwordId_rmPunc[token]] += 1
-		elif rmPuncStop:
-			if token in biwords_rmPunc_Stop:
-				feat[biwordId_rmPunc_Stop[token]] += 1
-		else:
-			if token in uniwords:
-				feat[biwordId[token]] += 1
-	feat.append(1)
-	return feat
-
-
-
-clf = linear_model.Ridge(1.0, fit_intercept=False) # MSE + 1.0 l2
-clf.fit(X, y)
-predictions = clf.predict(X_test)
-print("mse of prediction is "+ str(mean_squared_error(y_test ,predictions)))
+	X = [featureSummary(d, 1)for d in data[:9000]]
+	y = [int(d["rating"]) for d in data[:9000]]
+	X_test = [featureSummary(d, 1) for d in data[9000:10000]]
+	y_test = [int(d["rating"]) for d in data[9000:10000]]
+	clf = linear_model.Ridge(1.0, fit_intercept=False) # MSE + 1.0 l2
+	clf.fit(X, y)
+	predictions = clf.predict(X_test)
+	print("top " + str(top_k_uni))
+	print("mse of prediction is "+ str(mean_squared_error(y_test ,predictions)))
+	print("mae of prediction is "+ str(mean_absolute_error(y_test ,predictions)))
